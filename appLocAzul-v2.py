@@ -5,31 +5,56 @@ from datetime import datetime
 # Constantes para os caminhos das pastas
 SOURCE_FOLDER = r"\\REGENTEAPP\Senior\Regente\GDS\AGUARDANDO"
 DESTINATION_FOLDER = r"\\REGENTEAPP\Senior\Regente\GDS"
-#SOURCE_FOLDER = r"C:\Users\israe\Desktop\AIR\AGUARDANDO"
-#DESTINATION_FOLDER = r"C:\Users\israe\Desktop\AIR\GDS"
+#SOURCE_FOLDER = r"C:\Users\israe\Desktop\TARUMAN\AIR_SEP_ERROS"
+#DESTINATION_FOLDER = r"C:\Users\israe\Desktop\TARUMAN\AIR_SEP_ERROS\GDS"
 
 def modify_file(file_path, log_file_path, destination_folder):
     # Variável para código da companhia
     sigla = ""
     has_required_line = False
     
-    # Tentar diferentes codificações
+    # Ler em modo binário para lidar com BOM
+    try:
+        with open(file_path, 'rb') as file:
+            content = file.read()
+    except Exception as e:
+        log_message = f"Erro ao ler {file_path} em binário: {str(e)}\n"
+        with open(log_file_path, 'a', encoding='utf-8') as log_file:
+            log_file.write(log_message)
+        return False
+    
+    # Remover BOM UTF-8 se presente
+    if content.startswith(b'\xef\xbb\xbf'):
+        content = content[3:]
+        log_message = f"BOM UTF-8 detectado e removido em {file_path}.\n"
+        with open(log_file_path, 'a', encoding='utf-8') as log_file:
+            log_file.write(log_message)
+    
+    # Tentar decodificar o conteúdo (sem BOM)
     encodings = ['utf-8', 'latin1', 'cp1252']
     lines = None
+    used_encoding = None
     for encoding in encodings:
         try:
-            with open(file_path, 'r', encoding=encoding) as file:
-                lines = file.readlines()
+            text = content.decode(encoding)
+            lines = text.splitlines(keepends=True)  # Simula readlines() preservando newlines
+            used_encoding = encoding
             break
         except Exception as e:
             continue
     
     if lines is None:
-        log_message = f"Erro ao ler {file_path}: Todas as codificações falharam.\n"
+        log_message = f"Erro ao decodificar {file_path}: Todas as codificações falharam.\n"
         with open(log_file_path, 'a', encoding='utf-8') as log_file:
             log_file.write(log_message)
         return False
     
+    log_message = f"Arquivo {file_path} lido com sucesso usando encoding '{used_encoding}'.\n"
+    with open(log_file_path, 'a', encoding='utf-8') as log_file:
+        log_file.write(log_message)
+    
+    # O resto da função permanece igual (verificação de "A-CIA AEREA;AD", modificações, etc.)
+    # ...    
     # Verificar linha A-CIA AEREA
     for line in lines:
         if line.startswith("A-CIA AEREA;AD"):
