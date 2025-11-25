@@ -109,3 +109,9 @@ A função `modify_file` no script `appLocAzul-v2.py` foi atualizada para:
 - Verificar e remover o BOM UTF-8 (`\xef\xbb\xbf`) do início do conteúdo, se presente.
 - Decodificar o conteúdo restante com as codificações `utf-8`, `latin1` ou `cp1252`, garantindo que o BOM não seja interpretado como texto.
 - Registrar
+
+## Correção de Problemas com classe UU UU - 25 de Novembro de 2025
+### Problema Identificado
+Em 25 de Novembro de 2025, foi identificado um erro em arquivos processados, onde o validador downstream reportava: "Classe deve ter uma posição:N'". Esse erro ocorria devido à presença do caracter UU UU no arquivo. Isso resultava em arquivos processados que não atendiam ao requisito do validador de começar com "U U".
+- Ler os arquivos loaliza o registro H.
+- Verificar e remover o UU UU, se presente, substituindo por U U.
